@@ -1,18 +1,26 @@
 {
   "name": "koishi-plugin-kimi-api",
   "description": "kimi-api",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
     "lib",
     "dist"
   ],
+  "koishi": {
+    "preview": true
+  },
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/saitenasuk/koishi-plugin-kimi-api.git"
+  },
   "keywords": [
     "chatbot",
     "koishi",
-    "plugin"
+    "plugin",
+    "kimi"
   ],
   "peerDependencies": {
     "koishi": "^4.17.9"
