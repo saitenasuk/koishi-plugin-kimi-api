@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-kimi-api",
-  "description": "kimi-api",
-  "version": "0.0.4",
+  "description": "基于kimi-free-api项目进行对话（需要）",
+  "version": "0.0.5",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -9,7 +9,14 @@
     "dist"
   ],
   "koishi": {
-    "preview": true
+    "preview": true,
+    "service": {
+      "required": [
+        "database",
+        "http"
+      ]
+    },
+    "hidden": true
   },
   "license": "MIT",
   "repository": {
@@ -24,8 +31,5 @@
   ],
   "peerDependencies": {
     "koishi": "^4.17.9"
-  },
-  "dependencies": {
-    "axios": "^1.7.2"
   }
 }
