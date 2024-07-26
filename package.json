@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-kimi-api",
-  "description": "基于kimi-free-api项目进行对话（需要）",
-  "version": "0.0.5",
+  "description": "基于kimi-free-api项目进行对话（需要自行部署[kimi-free-api](https://github.com/LLM-Red-Team/kimi-free-api)）",
+  "version": "0.0.6",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -14,9 +14,11 @@
       "required": [
         "database",
         "http"
+      ],
+      "optional": [
+        "markdownToImage"
       ]
-    },
-    "hidden": true
+    }
   },
   "license": "MIT",
   "repository": {
@@ -27,7 +29,8 @@
     "chatbot",
     "koishi",
     "plugin",
-    "kimi"
+    "kimi",
+    "chatgpt"
   ],
   "peerDependencies": {
     "koishi": "^4.17.9"
