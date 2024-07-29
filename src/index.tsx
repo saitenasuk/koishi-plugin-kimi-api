@@ -1,5 +1,5 @@
 import { Context, Schema, h } from "koishi";
-// Removed unused import
+import {} from "koishi-plugin-markdown-to-image-service";
 
 export const name = "kimi-api";
 
@@ -60,8 +60,6 @@ export async function apply(ctx: Context, config: Config) {
     conversation_id: "string",
     time: "time",
   });
-  //请求kimi-api接口
-  // const url = "http://192.168.1.104:8009/v1/chat/completions";
   const text1: string = `当然可以！以下是一个简单的Java示例代码，它演示了如何创建一个类，并在其中定义一个方法来计算两个数字的和。\n\n\`\`\`java\npublic class Calculator {\n\n    // 方法：计算两个整数的和\n    public int add(int a, int b) {\n        return a + b;\n    }\n\n    public static void main(String[] args) {\n        // 创建Calculator对象\n        Calculator calculator = new Calculator();\n\n        // 调用add方法\n        int sum = calculator.add(5, 10);\n\n        // 输出结果\n        System.out.println(\"5 + 10 = \" + sum);\n    }\n}\n\`\`\`\n\n### 代码说明\n1. **Calculator 类**: 定义了一个计算器类。\n2. **add 方法**: 接受两个整数参数，并返回它们的和。\n3. **main 方法**: 程序的入口点，创建一个 \`Calculator\` 对象并调用 \`add\` 方法输出结果。\n\n你可以将这段代码复制到你的Java开发环境中运行。希望对你有帮助！`;
   const text2: string =
     "好的，我已经阅读了你提供的链接内容。以下是该页面的主要内容概要：";
@@ -111,7 +109,7 @@ export async function apply(ctx: Context, config: Config) {
     return ctx.http
       .post(url, data, config)
       .then((res) => {
-        // console.log("res", res);
+        console.log("kimi-api-response", res);
         // console.log("choices", res.choices);
         if (res.choices && res.choices.length > 0) {
           return res.choices[0].message.content;
