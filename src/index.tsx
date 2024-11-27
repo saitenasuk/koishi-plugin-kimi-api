@@ -103,6 +103,7 @@ export async function apply(ctx: Context, config: Config) {
     headers: {
       Authorization: "Bearer" + " " + config.tokens,
     },
+    timeout: 120000,
   };
   //接口封装
   const queryKimiaApi = (url: string, data: any, config: any) => {
@@ -145,59 +146,41 @@ export async function apply(ctx: Context, config: Config) {
     .example("ai 鲁迅为什么暴打周树人\nai.link 鲁迅为什么暴打周树人")
     .action(async (_, message) => {
       // console.log("message", _.session);
-      // dialogData.messages[0].content = message;
+      dialogData.messages[0].content = message;
       console.log("______ :>> ", _.options);
       console.log("message :>> ", message);
-      /* queryKimiaApi(config.url, dialogData, configApi)
-      .then(async (msg) => {
-        // console.log("msg-session", msg);
-        if (
-          isMarkdown(msg) &&
-          ctx.markdownToImage &&
-          config.use_markdownToImage
-        ) {
-          const imageBuffer = await ctx.markdownToImage.convertToImage(msg);
-          _.session.send(
-            <>
-              <quote id={_.session.messageId} />
-              {h.image(imageBuffer, "image/png")}
-            </>
-          );
-        } else {
-          _.session.send(
-            <>
-              <quote id={_.session.messageId} />
-              {msg}
-            </>
-          );
-        }
-      })
-      .catch((error) => {
-        // 处理 queryKimiaApi 抛出的错误
-        console.error("msg-session error", error);
-        _.session.send(error);
-      }); */
-      if (
-        isMarkdown(text1) &&
-        ctx.markdownToImage &&
-        config.use_markdownToImage
-      ) {
-        const parts = text1.split("搜索结果来自：");
-        const imageBuffer = await ctx.markdownToImage.convertToImage(parts[0]);
-        _.session.send(
-          <>
-            <quote id={_.session.messageId} />
-            {h.image(imageBuffer, "image/png")}
-          </>
-        );
-      } else {
-        _.session.send(
-          <>
-            <quote id={_.session.messageId} />
-            {text1}
-          </>
-        );
-      }
+      queryKimiaApi(config.url, dialogData, configApi)
+        .then(async (msg) => {
+          // console.log("msg-session", msg);
+          if (
+            isMarkdown(msg) &&
+            ctx.markdownToImage &&
+            config.use_markdownToImage
+          ) {
+            const parts = msg.split("搜索结果来自：");
+            const imageBuffer = await ctx.markdownToImage.convertToImage(
+              parts[0]
+            );
+            _.session.send(
+              <>
+                <quote id={_.session.messageId} />
+                {h.image(imageBuffer, "image/png")}
+              </>
+            );
+          } else {
+            _.session.send(
+              <>
+                <quote id={_.session.messageId} />
+                {msg}
+              </>
+            );
+          }
+        })
+        .catch((error) => {
+          // 处理 queryKimiaApi 抛出的错误
+          console.error("msg-session error", error);
+          _.session.send(error);
+        });
     });
   // 派生式子指令
   ctx
@@ -205,28 +188,40 @@ export async function apply(ctx: Context, config: Config) {
     .action(async (_, message) => {
       console.log("________ :>> ", _);
       console.log("message :>> ", message);
-      if (
-        isMarkdown(text1) &&
-        ctx.markdownToImage &&
-        config.use_markdownToImage
-      ) {
-        const parts = text1.split("搜索结果来自：");
-        const parts2 = parts[1].split("【检索 11】");
-        const imageBuffer = await ctx.markdownToImage.convertToImage(parts[0]);
-        _.session.send(
-          <>
-            <quote id={_.session.messageId} />
-            {h.image(imageBuffer, "image/png")}
-            {parts2[0]}
-          </>
-        );
-      } else {
-        _.session.send(
-          <>
-            <quote id={_.session.messageId} />
-            {text1}
-          </>
-        );
-      }
+      dialogData.messages[0].content = message;
+      queryKimiaApi(config.url, dialogData, configApi)
+        .then(async (msg) => {
+          // console.log("msg-session", msg);
+          if (
+            isMarkdown(msg) &&
+            ctx.markdownToImage &&
+            config.use_markdownToImage
+          ) {
+            const parts = msg.split("搜索结果来自：");
+            const parts2 = parts[1].split("【检索 11】");
+            const imageBuffer = await ctx.markdownToImage.convertToImage(
+              parts[0]
+            );
+            _.session.send(
+              <>
+                <quote id={_.session.messageId} />
+                {h.image(imageBuffer, "image/png")}
+                {parts2[0]}
+              </>
+            );
+          } else {
+            _.session.send(
+              <>
+                <quote id={_.session.messageId} />
+                {msg}
+              </>
+            );
+          }
+        })
+        .catch((error) => {
+          // 处理 queryKimiaApi 抛出的错误
+          console.error("msg-session error", error);
+          _.session.send(error);
+        });
     });
 }
