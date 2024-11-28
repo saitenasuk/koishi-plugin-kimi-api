@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-kimi-api",
   "description": "基于kimi-free-api项目进行对话（需要自行部署[kimi-free-api](https://github.com/LLM-Red-Team/kimi-free-api)）",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -33,8 +33,8 @@
     "chatgpt"
   ],
   "peerDependencies": {
-    "koishi": "^4.17.9",
-    "koishi-plugin-markdown-to-image-service": "^1.2.1"
+    "koishi": "^4.18.2",
+    "koishi-plugin-markdown-to-image-service": "^1.2.5"
   },
   "dependencies": {
     "@satorijs/element": "^3.1.7"
