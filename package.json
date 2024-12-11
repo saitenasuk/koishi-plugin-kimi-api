@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-kimi-api",
-  "description": "基于kimi-free-api项目进行对话（需要自行部署[kimi-free-api](https://github.com/LLM-Red-Team/kimi-free-api)）",
-  "version": "0.0.13",
+  "description": "自用插件，调用kimi-api对话，解析抖音，tiktok",
+  "version": "0.0.15",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
