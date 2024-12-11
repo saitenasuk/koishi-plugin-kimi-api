@@ -1,5 +1,6 @@
 import { Context, Schema, h } from "koishi";
 import {} from "koishi-plugin-markdown-to-image-service";
+import { title } from "process";
 
 export const name = "kimi-api";
 
@@ -15,6 +16,8 @@ export interface Config {
   model: boolean;
   multiRoundDialogue: boolean;
   use_markdownToImage: boolean;
+  analyze: any;
+  tips: string;
 }
 
 export const Config: Schema<Config> = Schema.object({
@@ -43,6 +46,22 @@ export const Config: Schema<Config> = Schema.object({
       Schema.object({}),
     ]),
   ]),
+  analyze: Schema.intersect([
+    Schema.object({
+      analyze: Schema.boolean()
+        .description("是否开启解析抖音，tiktok链接")
+        .default(false),
+    }),
+    Schema.union([
+      Schema.object({
+        analyze: Schema.const(true).required(),
+        link: Schema.string()
+          .description("Api地址示例：http://127.0.0.1:80")
+          .required(),
+      }),
+      Schema.object({}),
+    ]),
+  ]),
   model: Schema.boolean()
     .description("是否开启kimi+智能体切换功能")
     .default(false)
@@ -54,20 +73,8 @@ export const Config: Schema<Config> = Schema.object({
   use_markdownToImage: Schema.boolean()
     .description("是否开启长文本markdown转图片")
     .default(false),
+  tips: Schema.string().description("大模型生成时发送的提示，不填写则不发送"),
 });
-// export default Schema.intersect([
-//   Schema.object({
-//     enabled: Schema.boolean().default(false),
-//   }).description("基础配置"),
-//   Schema.union([
-//     Schema.object({
-//       enabled: Schema.const(true).required(),
-//       foo: Schema.number().description("请输入一个数值。"),
-//       bar: Schema.string().description("请输入一个字符串。"),
-//     }),
-//     Schema.object({}),
-//   ]),
-// ]);
 declare module "koishi" {
   interface Tables {
     kimiData: kimiData;
@@ -87,6 +94,8 @@ const text2: string =
   "好的，我已经阅读了你提供的链接内容。以下是该页面的主要内容概要：";
 const text3: string =
   "根据搜索结果，以下是一些关于露码岛（露玛岛）的通关攻略和技巧：\n\n1. **基础操作**：游戏基础操作为WASD移动，鼠标左键进行割草/采集等动作，长按鼠标右键并拖动可以转动视角。长按鼠标左键可以连续操作，砍树挖矿不用重复点击[^3^]。\n\n2. **物品位置**：在建设你在露玛岛的小窝时，可能会找不到个别素材与道具，你可以在制造时使用QE来切换显示，不同原料的获取方式[^3^]。\n\n3. **露玛蛋获取**：游戏最快能获取的露玛蛋在城镇入口旁的遗迹中，通过解谜与战斗来到终点后，就能获得一颗露玛蛋。在城镇购买露玛孵化器蓝图后，就能孵化第一只露玛了[^3^]。\n\n4. **蓝图获取**：进入城镇左手边即可购买包括露玛孵化器在内的各种蓝图，随游戏进度商店会更新蓝图，记得时不时过来看看[^3^]。\n\n5. **职业选择**：内置七种职业，玩家进入其中后可以根据自己的需求选择喜欢的职业[^3^]。\n\n6. **矿洞探索**：矿井中需要大量火把，火把移除不返还材料，其他建筑返还材料[^5^]。\n\n7. **战斗技巧**：正式版中可以击杀幽灵与蜘蛛敌人了，使用鞭子可以打出硬直，之后注意走位就能消灭敌人了[^3^]。\n\n8. **黑暗地区**：在山洞等黑暗地区停留，将会很快死亡，因此采矿时请备好足够的火把与照明弹[^3^]。\n\n9. **喂食露玛**：选择露玛食物后，按R键即可抛出，露玛会自动进行。个别物品也可用R抛出，方便联机时快速交换物品[^3^]。\n\n10. **联机交换**：除抛物外，联机时也可通过小型箱子交换物品，其中也包括货币。箱子蓝图可在城镇处购买[^3^]。\n\n11. **提高采集效率**：城镇处铁砧可以升级工具，前期赚取金币的同时，多采集铜矿与收集宝箱中的工具代币，能有效提高工具升级速度[^3^]。\n\n12. **前往新地图**：城镇入口处右转即可触发前往新地图任务，更多区域大家可以自由探索[^3^]。\n\n这些攻略和技巧可以帮助你更好地通关露玛岛游戏。希望这些信息对你有所帮助！\n\n";
+//解析失败文本
+const analyze_err_text: string = "可能的原因:\n\n视频已被删除或者链接不正确。";
 export async function apply(ctx: Context, config: Config) {
   console.log("kimi-api apply");
   ctx.model.extend("kimiData", {
@@ -191,6 +200,35 @@ export async function apply(ctx: Context, config: Config) {
         throw err; // 抛出错误，让调用者处理
       });
   };
+  const HybridQuery = async (msg: string) => {
+    try {
+      const response = await fetch(
+        `https://api.example.com/data?url=${msg}&minimal=true`
+      );
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      console.log("Fetched data:", data);
+      return data;
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      throw error; // Re-throw the error to be handled by the caller
+    }
+  };
+
+  function formatMilliseconds(milliseconds) {
+    let seconds = Math.floor(milliseconds / 1000);
+    let minutes = Math.floor(seconds / 60);
+    let hours = Math.floor(minutes / 60);
+    seconds %= 60;
+    minutes %= 60;
+    const hh = String(hours).padStart(2, "0");
+    const mm = String(minutes).padStart(2, "0");
+    const ss = String(seconds).padStart(2, "0");
+    return `${hh}时${mm}分${ss}秒`;
+  }
+
   //判断是否markdown
   function isMarkdown(text: string): boolean {
     const markdownPatterns = [
@@ -214,9 +252,9 @@ export async function apply(ctx: Context, config: Config) {
     .action(async (_, message) => {
       console.log("________ :>> ", _);
       console.log("message :>> ", message);
-      // console.log(config);
-      // return;
+      console.log(config);
       try {
+        if (config.tips) await _.session.send(<>{config.tips}</>);
         const startTime = Date.now(); // 记录请求开始时间
         const res = await apiFetch(config.url, message, config);
         console.log("res :>> ", res);
@@ -232,7 +270,6 @@ export async function apply(ctx: Context, config: Config) {
           const parts = data.split("搜索结果来自：\n");
           // console.log("parts :>> ", parts[0]);
           // console.log("parts[1] :>> ", parts[1]);
-
           const imageBuffer = await ctx.markdownToImage.convertToImage(
             parts[0]
           );
@@ -282,6 +319,95 @@ export async function apply(ctx: Context, config: Config) {
         await _.session.cancelQueued();
       }
     });
+  ctx.on("message", async (session) => {
+    if (!config.analyze.analyze) return;
+    if (
+      session.content.includes("douyin.com") ||
+      session.content.includes("tiktok.com")
+    ) {
+      try {
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        const url = session.content.match(urlRegex)[0];
+        console.log("url :>> ", url);
+        const response = await fetch(
+          `${config.analyze.link}/api/hybrid/video_data?url=${url}&minimal=false`
+        );
+        //解析到视频大小
+        if (!response.ok) {
+          return session.send(
+            <>
+              <quote id={session.messageId} />
+              解析失败! 该链接或许不支持
+            </>
+          );
+        }
+        const res = await response.json();
+        const { desc, author, statistics, video, duration } = res.data;
+        const { nickname } = author;
+        const { digg_count, share_count, comment_count, collect_count } =
+          statistics;
+        const { big_thumbs, bit_rate, cover } = video;
+        const video_info = bit_rate.filter(
+          (item: any) =>
+            item.format === "mp4" &&
+            (item.gear_name === "adapt_lowest_1080_1" ||
+              item.gear_name === "adapt_lowest_720_1") &&
+            item.is_h265 === 1
+        );
+        console.log("video_info :>> ", video_info);
+        const text5 =
+          "标题：" +
+          desc +
+          "\n作者：" +
+          nickname +
+          "\n点赞数：" +
+          digg_count +
+          "\t  分享数：" +
+          share_count +
+          "\n评论数：" +
+          comment_count +
+          "\t  收藏数：" +
+          collect_count;
+        console.log(text5);
+        await session.sendQueued(
+          <>
+            <quote id={session.messageId} />
+            {/* {h.image(imageBuffer, "image/png")} */}
+            <img
+              src={
+                big_thumbs[0]?.img_url
+                  ? big_thumbs[0]?.img_url
+                  : cover.url_list[0]
+              }
+            />
+            {text5}
+          </>
+        );
+        await session.sendQueued(
+          "视频发送中... 时长：" +
+            formatMilliseconds(duration) +
+            "  大小：" +
+            (video_info[0].play_addr.data_size / 1024 / 1024).toFixed(2) +
+            "MB"
+        );
+        await session.sendQueued(
+          <>
+            <video src={video_info[0].play_addr.url_list[0]} />
+          </>
+        );
+      } catch (error) {
+        console.log(error);
+        return session.send(
+          <>
+            <quote id={session.messageId} />
+            发生错误：{error.message}
+          </>
+        );
+      } finally {
+        await session.cancelQueued();
+      }
+    }
+  });
   // 派生式子指令
   // ctx
   //   .command("ai.test <message:text> 展示巨长的搜索结果")
