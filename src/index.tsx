@@ -253,8 +253,10 @@ export async function apply(ctx: Context, config: Config) {
       console.log("________ :>> ", _);
       console.log("message :>> ", message);
       console.log(config);
+      let tipMessageId;
       try {
-        if (config.tips) await _.session.send(<>{config.tips}</>);
+        if (config.tips)
+          tipMessageId = await _.session.send(<>{config.tips}</>);
         const startTime = Date.now(); // 记录请求开始时间
         const res = await apiFetch(config.url, message, config);
         console.log("res :>> ", res);
@@ -317,6 +319,7 @@ export async function apply(ctx: Context, config: Config) {
         }
       } finally {
         await _.session.cancelQueued();
+        await _.session.bot.deleteMessage(_.session.channelId, tipMessageId);
       }
     });
   ctx.on("message", async (session) => {
